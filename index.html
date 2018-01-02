@@ -1,0 +1,193 @@
+<html>
+
+    <head>
+	<script
+	    src="https://code.jquery.com/jquery-3.2.1.min.js"
+	    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	    crossorigin="anonymous"></script>
+	
+	<style>
+	 .draggable {
+	     cursor: move;
+	 }
+	</style>
+    </head>
+
+    <body onload="">
+	<h1>Connect The Dots Generator</h1>
+	<hr>	
+	Number of points: <input type="range" min="1" max="100" value="50" id="numSamples" onchange="draw()">
+	<br>
+	Point size: <input type="range" min="1" max="50" value="5" id="radius" onchange="draw()">
+	<br>
+	Text font size: <input type="range" min="0" max="50" value="10" id="fontSize" onchange="draw()">
+	<br>
+	Text offset X: <input type="range" min="-50" max="50" value="10" id="offsetX" onchange="draw()">
+	<br>
+	Text offset Y: <input type="range" min="-50" max="50" value="-8" id="offsetY" onchange="draw()">
+	<br><br>
+
+	<div id="userActions">
+	    <input type="file" id="fileUpload">
+	</div>
+	<br>
+	<button onclick="togglePathColor()">Toggle Path</button>
+	<hr>
+	
+	<div id='container'></div>
+    </body>
+
+    <script>     
+     function draw() {
+	 var svg = document.getElementById('container').getElementsByTagName('svg')[0];
+	 var path = document.getElementById('container').getElementsByTagName('path')[0];
+	 var samples = parseInt(document.getElementById("numSamples").value);
+	 var radius = parseInt(document.getElementById("radius").value);
+	 var fontSize = parseInt(document.getElementById("fontSize").value);
+	 var offsetX = parseInt(document.getElementById("offsetX").value);
+	 var offsetY = parseInt(document.getElementById("offsetY").value);
+	 var points = pointsFromPath(path,samples)
+
+	 path.setAttribute('stroke', "red");
+	 // Delete all circles and text
+	 var paras = document.getElementsByClassName('temp');
+	 while(paras[0]) {
+	     paras[0].parentNode.removeChild(paras[0]);
+	 }
+
+	 // Create points from path
+	 function pointsFromPath(path,samples){
+	     var points = [];
+	     var len  = path.getTotalLength();
+	     var step = step=len/samples;
+	     for (var i=0;i<=len;i+=step){
+		 var p = path.getPointAtLength(i);
+		 points.push([p.x,p.y]);
+	     }
+	     return(points);
+	 }
+	 // Draw points as circles
+	 for (i = 0; i < points.length-1; i++) { 
+	     var point = document.createElementNS("http://www.w3.org/2000/svg", 'circle'); 
+	     point.setAttribute("cx", points[i][0]);
+	     point.setAttribute("cy", points[i][1]);
+	     point.setAttribute("r", radius);
+	     point.setAttribute("fill", "black");
+ 	     point.setAttribute("class", "draggable temp");
+ 	     point.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+	     point.setAttribute("onmousedown", "selectElement(evt)");
+	     svg.appendChild(point);
+	     var label = document.createElementNS("http://www.w3.org/2000/svg", 'text'); 
+	     label.setAttribute("x", points[i][0]+offsetX);
+	     label.setAttribute("y", points[i][1]+offsetY);
+	     label.setAttribute("fill", "black");
+	     label.setAttribute("text-anchor", "middle");
+	     label.setAttribute("font-size", fontSize);
+	     label.textContent = i+1; // convert from 0th index to 1th
+ 	     label.setAttribute("class", "draggable temp");
+ 	     label.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+	     label.setAttribute("onmousedown", "selectElement(evt)");
+	     svg.appendChild(label);
+	 }
+     }
+    </script>
+
+    <script>
+     function togglePathColor() {
+	 var x = document.getElementById('container').getElementsByTagName('path')[0];
+	 if (x.getAttribute('stroke') === "transparent") {
+	     x.setAttribute('stroke', "red");
+	 } else {
+	     x.setAttribute('stroke', "transparent");
+	 }
+     }
+    </script>
+    
+    <script type="text/ecmascript">
+     // Allow points to be moved manually
+     // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
+     var selectedElement = 0;
+     var currentX = 0;
+     var currentY = 0;
+     var currentMatrix = 0;
+     
+     function selectElement(evt) {
+	 selectedElement = evt.target;
+	 currentX = evt.clientX;
+	 currentY = evt.clientY;
+	 currentMatrix = selectedElement.getAttributeNS(null, "transform").slice(7,-1).split(' ');
+	 
+	 for(var i=0; i<currentMatrix.length; i++) {
+	     currentMatrix[i] = parseFloat(currentMatrix[i]);
+	 }
+	 
+	 selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
+	 selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+     }
+     function moveElement(evt){
+	 dx = evt.clientX - currentX;
+	 dy = evt.clientY - currentY;
+	 currentMatrix[4] += dx;
+	 currentMatrix[5] += dy;
+	 newMatrix = "matrix(" + currentMatrix.join(' ') + ")";
+
+	 selectedElement.setAttributeNS(null, "transform", newMatrix);
+	 currentX = evt.clientX;
+	 currentY = evt.clientY;
+     }
+     function deselectElement(evt){
+	 if(selectedElement != 0){
+	     selectedElement.removeAttributeNS(null, "onmousemove");
+	     selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
+	     selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+	     selectedElement = 0;
+	 }
+     }
+    </script>
+
+    <script>
+     // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
+     function b64DecodeUnicode(str) {
+         // Going backwards: from bytestream, to percent-encoding, to original string.
+         return decodeURIComponent(atob(str).split('').map(function(c) {
+	     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+	 }).join(''));
+     }
+
+     function setImage(imageSrc) {
+         imageSrc = imageSrc.replace('data:image/svg+xml;base64,', '');
+         imageSrc = b64DecodeUnicode(imageSrc);
+         document.getElementById("container").innerHTML = imageSrc;
+	 draw();
+     }
+
+     // File upload
+     /* modified from https://codepen.io/doughensel/pen/zGMmop */
+     function runUpload( file ) {
+	 console.log(file);
+         // http://stackoverflow.com/questions/12570834/how-to-preview-image-get-file-size-image-height-and-width-before-upload
+         if( file.type === 'image/svg+xml'  ){
+	     var reader = new FileReader(), image = new Image();
+	     reader.readAsDataURL( file );
+	     console.log('reading image...');
+	     reader.onload = function( _file ){
+	         console.log('setting image...');
+	         setImage(_file.target.result);
+	     } // END reader.onload()
+         } // END test if file.type === image
+     }
+     if( window.FileReader ){
+         //Bind the input[type="file"] to the function runUpload()
+         $('#fileUpload').on('change', function(){ runUpload( this.files[0] ); });
+     }else{
+         // Report error message if FileReader is unavilable
+         var p   = document.createElement( 'p' ),
+             msg = document.createTextNode( 'Sorry, your browser does not support FileReader.' );
+         p.className = 'error';
+         p.appendChild( msg );
+         $('#userActions').el.innerHTML = '';
+         $('#userActions').el.appendChild( p );
+     }
+    </script>
+
+</html>
