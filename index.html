@@ -1,11 +1,12 @@
 <html>
 
     <head>
+        <!-- <script src="snap.svg-min.js"></script>-->
 	<script
 	    src="https://code.jquery.com/jquery-3.2.1.min.js"
 	    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 	    crossorigin="anonymous"></script>
-	
+
 	<style>
 	 .draggable {
 	     cursor: move;
@@ -16,7 +17,9 @@
     <body onload="draw()">
 	<h1>Connect The Dots Generator</h1>
 	<hr>	
-	Number of points: <input type="range" min="1" max="100" value="50" id="numSamples" onchange="draw()">
+	Number of points: <input type="range" min="1" max="300" value="200" id="numSamples" onchange="draw()">
+	<br>
+	Point alpha: <input type="range" min="1" max="30" value="5" id="pointAlpha" onchange="draw()">
 	<br>
 	Point size: <input type="range" min="1" max="50" value="5" id="radius" onchange="draw()">
 	<br>
@@ -288,16 +291,33 @@
 	</div>
     </body>
 
+    <script>
+    function angle(p1, p2) {
+        var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        while (angle < 0) {
+            angle += 2 * Math.PI;
+        }
+        return angle;
+    }
+    function angle3(p1, p2, p3) {
+        return Math.abs(angle(p1, p2) - angle(p3, p2));
+    }
+    function deg(rad) {
+        return rad * 180 / Math.PI;
+    }
+    </script>
+
     <script>     
      function draw() {
 	 var svg = document.getElementById('container').getElementsByTagName('svg')[0];
 	 var path = document.getElementById('container').getElementsByTagName('path')[0];
 	 var samples = parseInt(document.getElementById("numSamples").value);
+	 var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
 	 var radius = parseInt(document.getElementById("radius").value);
 	 var fontSize = parseInt(document.getElementById("fontSize").value);
 	 var offsetX = parseInt(document.getElementById("offsetX").value);
 	 var offsetY = parseInt(document.getElementById("offsetY").value);
-	 var points = pointsFromPath(path,samples)
+	 var points = pointsFromPath(path, samples)
 
 	 path.setAttribute('stroke', "red");
 	 // Delete all circles and text
@@ -306,16 +326,46 @@
 	     paras[0].parentNode.removeChild(paras[0]);
 	 }
 
+     function deletePoints(points) {
+         var exclude_points = [];
+	     for (var i = 0; i < points.length - 2; i += 1) {
+            var p1 = points[i];
+            var p2 = points[i + 1];
+            var p3 = points[i + 2];
+            console.log(deg(angle3(p1, p2, p3)));
+            if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
+                exclude_points.push(i + 1);
+                i++;
+            }
+	     }
+         var new_points = [];
+         for (var i = 0; i < points.length; i++) {
+            if (!exclude_points.includes(i)) {
+                new_points.push(points[i]);
+            }
+         }
+	     return(new_points);
+     }
+
 	 // Create points from path
-	 function pointsFromPath(path,samples){
+	 function pointsFromPath(path, samples){
+         //path = Snap("#container > svg > path:nth-child(1)");
+         // path = Snap(path);
 	     var points = [];
 	     var len  = path.getTotalLength();
 	     var step = step=len/samples;
-	     for (var i=0;i<=len;i+=step){
-		 var p = path.getPointAtLength(i);
-		 points.push([p.x,p.y]);
+	     for (var i = 0; i <= len; i += step) {
+             var p = path.getPointAtLength(i);
+             points.push(p);
 	     }
-	     return(points);
+         for (var k = 0; k < 5; k++) {
+             points = deletePoints(points);
+         }
+         var new_points = [];
+         for (var i = 0; i < points.length; i++) {
+             new_points.push([points[i].x, points[i].y]);
+         }
+	     return(new_points);
 	 }
 	 // Draw points as circles
 	 for (i = 0; i < points.length-1; i++) { 
