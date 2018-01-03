@@ -1,7 +1,7 @@
 <html>
 
     <head>
-        <!-- <script src="snap.svg-min.js"></script>-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
 	<script
 	    src="https://code.jquery.com/jquery-3.2.1.min.js"
 	    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -11,37 +11,69 @@
 	 .draggable {
 	     cursor: move;
 	 }
+	 .github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}
+	 .panel-collapse-clickable {
+	     cursor: pointer;
+	 }
 	</style>
+
+	 <title>Connect The Dots Generator by JEFworks</title>
     </head>
 
     <body onload="draw()">
-	<h1>Connect The Dots Generator</h1>
-	<hr>	
-	Number of points: <input type="range" min="1" max="300" value="50" id="numSamples" onchange="draw()">
-	<br>
-	Filter points: <input type="range" min="1" max="100" value="20" id="pointAlpha" onchange="draw()">
-	<br>
-	Point size: <input type="range" min="1" max="50" value="5" id="radius" onchange="draw()">
-	<br>
-	Text font size: <input type="range" min="0" max="50" value="10" id="fontSize" onchange="draw()">
-	<br>
-	Text offset X: <input type="range" min="-50" max="50" value="10" id="offsetX" onchange="draw()">
-	<br>
-	Text offset Y: <input type="range" min="-50" max="50" value="-8" id="offsetY" onchange="draw()">
-	<br><br>
 
-	<div id="userActions">
-	    <input type="file" id="fileUpload">
+	<!-- github corner -->
+	<a href="https://github.com/jefworks/Connect-The-Dots-Generator" class="github-corner"><svg width="50px" height="50px" viewBox="0 0 250 250" style="z-index:1000; fill:#666; color:#666; position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="#fff" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="#fff" class="octo-body"></path></svg></a>
+
+	<div class="container-fluid" style="margin:0px; padding:0px">
+	    <!-- intro --->
+	    <div class="panel" style="background-color: rgba(0, 0, 0, 0.1);">
+		<div class="panel-heading"  style="background-color:#fff; color:#666; height: 50px; border-radius: 0 !important;">
+		    <h2 align="center" style="padding:0px; margin:0px;">
+			Connect The Dots Generator by JEFworks
+			<span class="pull-right panel-collapse-clickable" data-toggle="collapse" data-parent="#accordion" href="#filterPanel">
+			    <i class="glyphicon glyphicon-chevron-up"></i>
+			</span>
+		    </h2>
+		</div>
+		<div id="filterPanel" class="panel-collapse panel-collapse collapse in">
+		    <div class="panel-body">
+			<div class="row">
+			    <div class="col-md-6">
+				<b>Instructions</b>: Upload an SVG image. The first Path object in the SVG will be used to create a connect-the-dots game. Use the options to automatically set the number of dots, dot sizes, and other features. You can also manually drag points and text for fine tuning. Toggle the Path line off using the Toggle Path button when you are done.
+				<hr>
+				
+				<div id="userActions">
+				    <input type="file" id="fileUpload" type="button" class="btn btn-block" >
+				</div>
+				<br>
+				<button type="button" class="btn btn-block"  onclick="togglePathColor()">Toggle Path</button>				
+
+			    </div>
+			    <div class="col-md-6">
+				Number of points: <input type="range" min="1" max="300" value="50" id="numSamples" onchange="draw()">
+				<br>
+				Filter points: <input type="range" min="1" max="100" value="20" id="pointAlpha" onchange="draw()">
+				<br>
+				Point size: <input type="range" min="1" max="50" value="5" id="radius" onchange="draw()">
+				<br>
+				Text font size: <input type="range" min="0" max="50" value="10" id="fontSize" onchange="draw()">
+				<br>
+				Text offset X: <input type="range" min="-50" max="50" value="10" id="offsetX" onchange="draw()">
+				<br>
+				Text offset Y: <input type="range" min="-50" max="50" value="-8" id="offsetY" onchange="draw()">
+			    </div>
+			</div>
+		    </div>
+		</div>
+	    </div>
 	</div>
-	<br>
-	<button onclick="togglePathColor()">Toggle Path</button>
-	<hr>
 	
 	<div id='container'>
 	    <!-- Default -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="500px" height="500px" viewBox="0 0 500 500" enable-background="new 0 0 500 500" xml:space="preserve">
+	 width="100%" height="100%" viewBox="0 0 500 500" enable-background="new 0 0 500 500" xml:space="preserve">
 <path fill="none" stroke="#F8B747" stroke-miterlimit="10" d="M461.461,199.724c-0.321-2.895-8.578-23.998-23.328-43.475
 	c16.377-63.024-2.257-83.485-2.257-83.485c-23.099-1.175-52.221,29.076-62.409,40.558c-10.323-2.599-19.036-2.604-28.346-1.939
 	c-12.835,0.916-24.679,3.335-35.598,7.618c-9.784-10.866-35.295-36.036-62.879-37.547c0,0-15.653,40.09,11.347,82.595
@@ -249,7 +281,7 @@
             var p1 = points[i];
             var p2 = points[i + 1];
             var p3 = points[i + 2];
-            console.log(deg(angle3(p1, p2, p3)));
+		 //console.log(deg(angle3(p1, p2, p3)));
             if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
                 exclude_points.push(i + 1);
                 i++;
@@ -341,8 +373,10 @@
 	 
 	 selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
 	 selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+	 selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
      }
      function moveElement(evt){
+	 //console.log(selectedElement);
 	 dx = evt.clientX - currentX;
 	 dy = evt.clientY - currentY;
 	 currentMatrix[4] += dx;
@@ -408,4 +442,15 @@
      }
     </script>
 
+    <!-- for collapsible panel -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+     $(".panel-collapse").on("hide.bs.collapse", function () {
+	 $(".panel-collapse-clickable").find('i').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
+     });
+
+     $(".panel-collapse").on("show.bs.collapse", function () {
+	 $(".panel-collapse-clickable").find('i').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
+     });
+    </script>
 </html>
