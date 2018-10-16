@@ -35,6 +35,9 @@
 				</div>
 				<br>
 				<!--- TODO: Add path number selector here -->
+        <label for="paths">Choose Path:</label>
+        <select class = "path-selector" style = "width: 100%;padding: 3px;" onchange = "changePath()" name = "paths"></select>
+        <br>
 				<br>
 				<button type="button" class="btn btn-block"  onclick="togglePathColor()" style="background-color:#fff">Toggle Path</button>
 				<br><br>
@@ -245,151 +248,158 @@
      function deg(rad) {
          return rad * 180 / Math.PI;
      }
-
+     var paths = document.getElementsByTagName('path');
+     var pathSelector = document.querySelector('.path-selector');
+     for(let i = 0; i < paths.length; i++) {
+       var pathOption = document.createElement('option');
+       pathOption.value = paths[i];
+       pathOption.text = `Path ${i}`;
+       pathSelector.appendChild(pathOption);
+     }
      // Main draw function
-     function draw() {	 
-	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
-	 var path = document.getElementById('container').getElementsByTagName('path')[0]; // assumes 1st path is the one we are making into dots
-	 // TODO: allow user to select path instead
-	 // ie. pseudocode: 
-	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
-	 // var path = document.getElementById('container').getElementsByTagName('path')[i];
-	 
-	 // parse user input
-	 var samples = parseInt(document.getElementById("numSamples").value);
-	 var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
-	 var radius = parseInt(document.getElementById("radius").value);
-	 var fontSize = parseInt(document.getElementById("fontSize").value);
-	 var offsetX = parseInt(document.getElementById("offsetX").value);
-	 var offsetY = parseInt(document.getElementById("offsetY").value);
-	 var points = pointsFromPath(path, samples)
-	 path.setAttribute('stroke', "red");
-	 
-	 // Delete all circles and text upon redraw
-	 var paras = document.getElementsByClassName('temp');
-	 while(paras[0]) {
-	     paras[0].parentNode.removeChild(paras[0]);
-	 }
+     function draw() {
+    	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
+    	 var path = document.getElementById('container').getElementsByTagName('path')[0]; // assumes 1st path is the one we are making into dots
+    	 // TODO: allow user to select path instead
+    	 // ie. pseudocode:
+    	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
+    	 // var path = document.getElementById('container').getElementsByTagName('path')[i];
 
-	 function deletePoints(points) {
-             var exclude_points = [];
-	     for (var i = 0; i < points.length - 2; i += 1) {
-		 var p1 = points[i];
-		 var p2 = points[i + 1];
-		 var p3 = points[i + 2];
-		 //console.log(deg(angle3(p1, p2, p3)));
-		 if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
-                     exclude_points.push(i + 1);
-                     i++;
-		 }
-	     }
-             var new_points = [];
-             for (var i = 0; i < points.length; i++) {
-		 if (!exclude_points.includes(i)) {
-                     new_points.push(points[i]);
-		 }
-             }
-	     return(new_points);
-	 }
+    	 // parse user input
+    	 var samples = parseInt(document.getElementById("numSamples").value);
+    	 var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
+    	 var radius = parseInt(document.getElementById("radius").value);
+    	 var fontSize = parseInt(document.getElementById("fontSize").value);
+    	 var offsetX = parseInt(document.getElementById("offsetX").value);
+    	 var offsetY = parseInt(document.getElementById("offsetY").value);
+    	 var points = pointsFromPath(path, samples)
+    	 path.setAttribute('stroke', "red");
 
-	 // Create points from path
-	 function pointsFromPath(path, samples){
-	     var points = [];
-	     var len  = path.getTotalLength();
-	     var step = step=len/samples;
-	     for (var i = 0; i <= len; i += step) {
-		 var p = path.getPointAtLength(i);
-		 points.push(p);
-	     }
-             for (var k = 0; k < 5; k++) {
-		 points = deletePoints(points);
-             }
-             var new_points = [];
-             for (var i = 0; i < points.length; i++) {
-		 new_points.push([points[i].x, points[i].y]);
-             }
-	     return(new_points);
-	 }
-	 
-	 // Draw points as circles
-	 for (i = 0; i < points.length-1; i++) {
-	     var point = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-	     point.setAttribute("cx", points[i][0]);
-	     point.setAttribute("cy", points[i][1]);
-	     point.setAttribute("r", radius);
-	     point.setAttribute("fill", "black");
- 	     point.setAttribute("class", "draggable temp");
- 	     point.setAttribute("transform", "matrix(1 0 0 1 0 0)");
-	     point.setAttribute("onmousedown", "selectElement(evt)");
-	     svg.appendChild(point);
-	     var label = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-	     label.setAttribute("x", points[i][0]+offsetX);
-	     label.setAttribute("y", points[i][1]+offsetY);
-	     label.setAttribute("fill", "black");
-	     label.setAttribute("text-anchor", "middle");
-	     label.setAttribute("font-size", fontSize);
-	     label.textContent = i+1; // convert from 0th index to 1th
- 	     label.setAttribute("class", "draggable temp");
- 	     label.setAttribute("transform", "matrix(1 0 0 1 0 0)");
-	     label.setAttribute("onmousedown", "selectElement(evt)");
-	     svg.appendChild(label);
-	 }
-     }
-    </script>
+    	 // Delete all circles and text upon redraw
+    	 var paras = document.getElementsByClassName('temp');
+    	 while(paras[0]) {
+    	     paras[0].parentNode.removeChild(paras[0]);
+    	 }
 
-    <script>
-     // Toggle path visibility
-     function togglePathColor() {
-	 var x = document.getElementById('container').getElementsByTagName('path')[0];
-	 if (x.getAttribute('stroke') === "transparent") {
-	     x.setAttribute('stroke', "red");
-	 } else {
-	     x.setAttribute('stroke', "transparent");
-	 }
-     }
-    </script>
+    	 function deletePoints(points) {
+                 var exclude_points = [];
+    	     for (var i = 0; i < points.length - 2; i += 1) {
+    		 var p1 = points[i];
+    		 var p2 = points[i + 1];
+    		 var p3 = points[i + 2];
+    		 //console.log(deg(angle3(p1, p2, p3)));
+    		 if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
+                         exclude_points.push(i + 1);
+                         i++;
+    		 }
+    	     }
+                 var new_points = [];
+                 for (var i = 0; i < points.length; i++) {
+    		 if (!exclude_points.includes(i)) {
+                         new_points.push(points[i]);
+    		 }
+                 }
+    	     return(new_points);
+    	 }
 
-    <script type="text/ecmascript">
-     // Allow points to be moved manually
-     // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
-     var selectedElement = 0;
-     var currentX = 0;
-     var currentY = 0;
-     var currentMatrix = 0;
+    	 // Create points from path
+    	 function pointsFromPath(path, samples){
+    	     var points = [];
+    	     var len  = path.getTotalLength();
+    	     var step = step=len/samples;
+    	     for (var i = 0; i <= len; i += step) {
+    		 var p = path.getPointAtLength(i);
+    		 points.push(p);
+    	     }
+                 for (var k = 0; k < 5; k++) {
+    		 points = deletePoints(points);
+                 }
+                 var new_points = [];
+                 for (var i = 0; i < points.length; i++) {
+    		 new_points.push([points[i].x, points[i].y]);
+                 }
+    	     return(new_points);
+    	 }
 
-     function selectElement(evt) {
-	 selectedElement = evt.target;
-	 currentX = evt.clientX;
-	 currentY = evt.clientY;
-	 currentMatrix = selectedElement.getAttributeNS(null, "transform").slice(7,-1).split(' ');
+    	 // Draw points as circles
+    	 for (i = 0; i < points.length-1; i++) {
+    	     var point = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+    	     point.setAttribute("cx", points[i][0]);
+    	     point.setAttribute("cy", points[i][1]);
+    	     point.setAttribute("r", radius);
+    	     point.setAttribute("fill", "black");
+     	     point.setAttribute("class", "draggable temp");
+     	     point.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+    	     point.setAttribute("onmousedown", "selectElement(evt)");
+    	     svg.appendChild(point);
+    	     var label = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+    	     label.setAttribute("x", points[i][0]+offsetX);
+    	     label.setAttribute("y", points[i][1]+offsetY);
+    	     label.setAttribute("fill", "black");
+    	     label.setAttribute("text-anchor", "middle");
+    	     label.setAttribute("font-size", fontSize);
+    	     label.textContent = i+1; // convert from 0th index to 1th
+     	     label.setAttribute("class", "draggable temp");
+     	     label.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+    	     label.setAttribute("onmousedown", "selectElement(evt)");
+    	     svg.appendChild(label);
+    	 }
+         }
+        </script>
 
-	 for(var i=0; i<currentMatrix.length; i++) {
-	     currentMatrix[i] = parseFloat(currentMatrix[i]);
-	 }
+        <script>
+         // Toggle path visibility
+         function togglePathColor() {
+    	 var x = document.getElementById('container').getElementsByTagName('path')[0];
+    	 if (x.getAttribute('stroke') === "transparent") {
+    	     x.setAttribute('stroke', "red");
+    	 } else {
+    	     x.setAttribute('stroke', "transparent");
+    	 }
+         }
+        </script>
 
-	 selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
-	 selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
-	 selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
-     }
-     function moveElement(evt){
-	 //console.log(selectedElement);
-	 dx = evt.clientX - currentX;
-	 dy = evt.clientY - currentY;
-	 currentMatrix[4] += dx;
-	 currentMatrix[5] += dy;
-	 newMatrix = "matrix(" + currentMatrix.join(' ') + ")";
+        <script type="text/ecmascript">
+         // Allow points to be moved manually
+         // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
+         var selectedElement = 0;
+         var currentX = 0;
+         var currentY = 0;
+         var currentMatrix = 0;
 
-	 selectedElement.setAttributeNS(null, "transform", newMatrix);
-	 currentX = evt.clientX;
-	 currentY = evt.clientY;
-     }
-     function deselectElement(evt){
-	 if(selectedElement != 0){
-	     selectedElement.removeAttributeNS(null, "onmousemove");
-	     selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
-	     selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
-	     selectedElement = 0;
-	 }
+         function selectElement(evt) {
+    	 selectedElement = evt.target;
+    	 currentX = evt.clientX;
+    	 currentY = evt.clientY;
+    	 currentMatrix = selectedElement.getAttributeNS(null, "transform").slice(7,-1).split(' ');
+
+    	 for(var i=0; i<currentMatrix.length; i++) {
+    	     currentMatrix[i] = parseFloat(currentMatrix[i]);
+    	 }
+
+    	 selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
+    	 selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+    	 selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
+         }
+         function moveElement(evt){
+    	 //console.log(selectedElement);
+    	 dx = evt.clientX - currentX;
+    	 dy = evt.clientY - currentY;
+    	 currentMatrix[4] += dx;
+    	 currentMatrix[5] += dy;
+    	 newMatrix = "matrix(" + currentMatrix.join(' ') + ")";
+
+    	 selectedElement.setAttributeNS(null, "transform", newMatrix);
+    	 currentX = evt.clientX;
+    	 currentY = evt.clientY;
+         }
+         function deselectElement(evt){
+    	 if(selectedElement != 0){
+    	     selectedElement.removeAttributeNS(null, "onmousemove");
+    	     selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
+    	     selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+    	     selectedElement = 0;
+    	 }
      }
     </script>
 
