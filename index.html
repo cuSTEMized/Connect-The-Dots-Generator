@@ -236,13 +236,14 @@
     <script>
      // Helper functions
      function angle(p1, p2) {
-         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); //getting the angle between p2 and p1
          while (angle < 0) {
-             angle += 2 * Math.PI;
+             angle += 2 * Math.PI; //if angle is negative, add 360deg to get positive form
          }
          return angle;
      }
-     function angle3(p1, p2, p3) {
+     function angle3(p1, p2, p3) { //calculate the angle between p1, p2, then p2 and p3, then
+       //take the difference between the two angles
          return Math.abs(angle(p1, p2) - angle(p3, p2));
      }
      function deg(rad) {
@@ -255,11 +256,17 @@
        pathOption.value = paths[i];
        pathOption.text = `Path ${i}`;
        pathSelector.appendChild(pathOption);
+      }
+
+      function changePath() { //every time the select element changes, changePath is invoked
+        path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
+        console.log(pathSelector.selectedIndex);
+        draw();
      }
      // Main draw function
      function draw() {
     	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
-    	 var path = document.getElementById('container').getElementsByTagName('path')[0]; // assumes 1st path is the one we are making into dots
+    	 var path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex]; // assumes 1st path is the one we are making into dots
     	 // TODO: allow user to select path instead
     	 // ie. pseudocode:
     	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
@@ -287,7 +294,7 @@
     		 var p1 = points[i];
     		 var p2 = points[i + 1];
     		 var p3 = points[i + 2];
-    		 //console.log(deg(angle3(p1, p2, p3)));
+    		 // console.log(deg(angle3(p1, p2, p3)));
     		 if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
                          exclude_points.push(i + 1);
                          i++;
@@ -344,7 +351,7 @@
     	     label.setAttribute("onmousedown", "selectElement(evt)");
     	     svg.appendChild(label);
     	 }
-         }
+     }
         </script>
 
         <script>
