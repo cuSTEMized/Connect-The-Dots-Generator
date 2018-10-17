@@ -357,7 +357,7 @@
         <script>
          // Toggle path visibility
          function togglePathColor() {
-    	 var x = document.getElementById('container').getElementsByTagName('path')[0];
+    	 var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
     	 if (x.getAttribute('stroke') === "transparent") {
     	     x.setAttribute('stroke', "red");
     	 } else {
