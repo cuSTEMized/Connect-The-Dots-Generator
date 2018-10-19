@@ -252,7 +252,7 @@
      //added path selector
      var paths = document.getElementsByTagName('path');
      var pathSelector = document.querySelector('#pathNumber');
-     for(let i = 0; i < paths.length; i++) {
+     for(var i = 0; i < paths.length; i++) {
          var pathOption = document.createElement('option');
          pathOption.value = paths[i];
          pathOption.text = `Path ${i}`;
