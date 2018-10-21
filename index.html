@@ -236,20 +236,19 @@
     <script>
      // Helper functions
      function angle(p1, p2) {
-         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); //getting the angle between p2 and p1
+         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); 
          while (angle < 0) {
-             angle += 2 * Math.PI; //if angle is negative, add 360deg to get positive form
+             angle += 2 * Math.PI;
          }
          return angle;
      }
-     function angle3(p1, p2, p3) { //calculate the angle between p1, p2, then p2 and p3, then
-       //take the difference between the two angles
+     function angle3(p1, p2, p3) {
          return Math.abs(angle(p1, p2) - angle(p3, p2));
      }
      function deg(rad) {
          return rad * 180 / Math.PI;
      }
-     //added path selector
+     //ADDED PATH SELECTOR
      var paths = document.getElementsByTagName('path');
      var pathSelector = document.querySelector('#pathNumber');
      for(var i = 0; i < paths.length; i++) {
@@ -259,10 +258,11 @@
          pathSelector.appendChild(pathOption);
       }
 
-      function changePath() { //every time the select element changes, changePath is invoked
-        path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-        console.log(pathSelector.selectedIndex);
-        draw();
+     //ADDED CHANGE PATH FUNCTION
+     function changePath() { //every time the select element changes, changePath is invoked
+         path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
+         console.log(pathSelector.selectedIndex);
+         draw();
      }
      // Main draw function
      function draw() {
