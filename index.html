@@ -282,6 +282,8 @@
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
     	 var points = pointsFromPath(path, samples)
     	 path.setAttribute('stroke', "red");
+    	 path.setAttribute('style', "fill:white");
+    	 path.setAttribute('fill', "white");
 
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
