@@ -236,7 +236,7 @@
     <script>
      // Helper functions
      function angle(p1, p2) {
-         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); 
+         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
          while (angle < 0) {
              angle += 2 * Math.PI;
          }
@@ -248,15 +248,10 @@
      function deg(rad) {
          return rad * 180 / Math.PI;
      }
-     //ADDED PATH SELECTOR
+
      var paths = document.getElementsByTagName('path');
      var pathSelector = document.querySelector('#pathNumber');
-     for(var i = 0; i < paths.length; i++) {
-         var pathOption = document.createElement('option');
-         pathOption.value = paths[i];
-         pathOption.text = `Path ${i}`;
-         pathSelector.appendChild(pathOption);
-      }
+     var path = paths[0];
 
      //ADDED CHANGE PATH FUNCTION
      function changePath() { //every time the select element changes, changePath is invoked
@@ -264,10 +259,20 @@
          console.log(pathSelector.selectedIndex);
          draw();
      }
+     // this function adds the path options to the path selector
+     function addPaths() {
+       for(let i = 0; i < paths.length; i++) {
+         var pathOption = document.createElement('option');
+         pathOption.value = paths[i];
+         pathOption.text = `Path ${i}`;
+         pathSelector.appendChild(pathOption);
+       }
+     }
+     addPaths() // call this function to populate the path selector
      // Main draw function
      function draw() {
     	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
-    	 var path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex]; // assumes 1st path is the one we are making into dots
+    	  // assumes 1st path is the one we are making into dots
     	 // TODO: allow user to select path instead
     	 // ie. pseudocode:
     	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
@@ -419,11 +424,20 @@
 	 }).join(''));
      }
 
+     function removeOptions(selectElement) {
+      for (var i = selectElement.length - 1; i >= 0; i--) {
+        selectElement.remove(i);
+      }
+    }
      function setImage(imageSrc) {
          imageSrc = imageSrc.replace('data:image/svg+xml;base64,', '');
          imageSrc = b64DecodeUnicode(imageSrc);
          document.getElementById("container").innerHTML = imageSrc;
-	 draw();
+         removeOptions(pathSelector); //REMOVE THE OPTIONS FROM THE PREVIOUS SVG IMAGE
+         paths = document.getElementsByTagName('path'); // resetting the paths and path variable
+         path = paths[0]; // redefines path as the first path of the new SVG
+         addPaths(); //ADD NEW PATH OPTIONS FROM NEW SVG (ImageSrc)
+	       draw();
      }
 
      // File upload
