@@ -10,6 +10,13 @@
 	    crossorigin="anonymous"></script>
 
 	<title>Connect The Dots Generator</title>
+
+  <style>
+    .active-stroke {
+      stroke: "red";
+    }
+
+  </style>
     </head>
 
     <body onload="draw()">
@@ -252,11 +259,14 @@
      var paths = document.getElementsByTagName('path');
      var pathSelector = document.querySelector('#pathNumber');
      var path = paths[0];
+     var previousStrokeColor;
 
      //ADDED CHANGE PATH FUNCTION
      function changePath() { //every time the select element changes, changePath is invoked
+         path.style.stroke = previousStrokeColor; // set the currently selected path stroke to its original color
          path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-         console.log(pathSelector.selectedIndex);
+         path.classList.add('active-stroke');
+         console.log(previousStrokeColor);
          draw();
      }
      // this function adds the path options to the path selector
@@ -272,11 +282,6 @@
      // Main draw function
      function draw() {
     	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
-    	  // assumes 1st path is the one we are making into dots
-    	 // TODO: allow user to select path instead
-    	 // ie. pseudocode:
-    	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
-    	 // var path = document.getElementById('container').getElementsByTagName('path')[i];
 
     	 // parse user input
     	 var samples = parseInt(document.getElementById("numSamples").value);
@@ -285,9 +290,9 @@
     	 var fontSize = parseInt(document.getElementById("fontSize").value);
     	 var offsetX = parseInt(document.getElementById("offsetX").value);
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
-    	 var points = pointsFromPath(path, samples)
-    	 path.setAttribute('stroke', "red");
-
+    	 var points = pointsFromPath(path, samples);
+       previousStrokeColor = path.style.stroke; //define the original stroke color before changing to red
+       path.style.stroke = "red";
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
     	 while(paras[0]) {
@@ -318,13 +323,14 @@
     	 function pointsFromPath(path, samples){
     	     var points = [];
     	     var len  = path.getTotalLength();
+           console.log(len);
     	     var step = step=len/samples;
     	     for (var i = 0; i <= len; i += step) {
-    		 var p = path.getPointAtLength(i);
-    		 points.push(p);
+    		   var p = path.getPointAtLength(i);
+    		   points.push(p);
     	     }
                  for (var k = 0; k < 5; k++) {
-    		 points = deletePoints(points);
+    		           points = deletePoints(points);
                  }
                  var new_points = [];
                  for (var i = 0; i < points.length; i++) {
@@ -361,12 +367,12 @@
 
         <script>
          // Toggle path visibility
-         function togglePathColor() {
+         function togglePathColor() { //BUG COLOR NOT CHANGING
     	 var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-    	 if (x.getAttribute('stroke') === "transparent") {
-    	     x.setAttribute('stroke', "red");
+    	 if (x.style.stroke != "red") {
+    	     x.style.stroke = 'red';
     	 } else {
-    	     x.setAttribute('stroke', "transparent");
+    	     x.style.stroke = previousStrokeColor;
     	 }
          }
         </script>
@@ -435,7 +441,7 @@
          document.getElementById("container").innerHTML = imageSrc;
          removeOptions(pathSelector); //REMOVE THE OPTIONS FROM THE PREVIOUS SVG IMAGE
          paths = document.getElementsByTagName('path'); // resetting the paths and path variable
-         path = paths[0]; // redefines path as the first path of the new SVG
+         path = paths[0]; // redefines path as the first path of the new
          addPaths(); //ADD NEW PATH OPTIONS FROM NEW SVG (ImageSrc)
 	       draw();
      }
