@@ -11,13 +11,16 @@
 
 	<title>Connect The Dots Generator</title>
 
-  <style>
+	<style>
 
-    .active-stroke {
-      stroke: red;
-    }
+	 .active-stroke {
+	     stroke: red;
+	 }
+	 .white-stroke {
+	     stroke: white;
+	 }
 
-  </style>
+	</style>
     </head>
 
     <body onload="draw()">
@@ -43,9 +46,9 @@
 				</div>
 				<br>
 				<!--- Added path number selector here -->
-        <label for="paths">Choose Path:</label>
-        <select id = "pathNumber" style = "width: 100%;padding: 3px;" onchange = "changePath()" name = "paths"></select>
-        <br>
+				<label for="paths">Choose Path:</label>
+				<select id = "pathNumber" style = "width: 100%;padding: 3px;" onchange = "changePath()" name = "paths"></select>
+				<br>
 				<br>
 				<button type="button" class="btn btn-block"  onclick="togglePathColor()" style="background-color:#fff">Toggle Path</button>
 				<br><br>
@@ -271,12 +274,12 @@
      }
      // this function adds the path options to the path selector
      function addPaths() {
-       for(let i = 0; i < paths.length; i++) {
-         var pathOption = document.createElement('option');
-         pathOption.value = paths[i];
-         pathOption.text = `Path ${i}`;
-         pathSelector.appendChild(pathOption);
-       }
+	 for(let i = 0; i < paths.length; i++) {
+             var pathOption = document.createElement('option');
+             pathOption.value = paths[i];
+             pathOption.text = `Path ${i}`;
+             pathSelector.appendChild(pathOption);
+	 }
      }
      addPaths() // call this function to populate the path selector
 
@@ -292,7 +295,7 @@
     	 var offsetX = parseInt(document.getElementById("offsetX").value);
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
     	 var points = pointsFromPath(path, samples);
-       path.classList.add('active-stroke');
+	 path.classList.add('active-stroke');
 
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
@@ -301,22 +304,22 @@
     	 }
 
     	 function deletePoints(points) {
-                 var exclude_points = [];
+             var exclude_points = [];
     	     for (var i = 0; i < points.length - 2; i += 1) {
     		 var p1 = points[i];
     		 var p2 = points[i + 1];
     		 var p3 = points[i + 2];
     		 if (Math.abs(180 - deg(angle3(p1, p2, p3))) < pointAlpha) {
-                         exclude_points.push(i + 1);
-                         i++;
+                     exclude_points.push(i + 1);
+                     i++;
     		 }
     	     }
-                 var new_points = [];
-                 for (var i = 0; i < points.length; i++) {
+             var new_points = [];
+             for (var i = 0; i < points.length; i++) {
     		 if (!exclude_points.includes(i)) {
-                         new_points.push(points[i]);
+                     new_points.push(points[i]);
     		 }
-                 }
+             }
     	     return(new_points);
     	 }
 
@@ -324,19 +327,19 @@
     	 function pointsFromPath(path, samples){
     	     var points = [];
     	     var len  = path.getTotalLength();
-           console.log(len);
+             console.log(len);
     	     var step = step=len/samples;
     	     for (var i = 0; i <= len; i += step) {
-    		   var p = path.getPointAtLength(i);
-    		   points.push(p);
+    		 var p = path.getPointAtLength(i);
+    		 points.push(p);
     	     }
-                 for (var k = 0; k < 5; k++) {
-    		           points = deletePoints(points);
-                 }
-                 var new_points = [];
-                 for (var i = 0; i < points.length; i++) {
+             for (var k = 0; k < 5; k++) {
+    		 points = deletePoints(points);
+             }
+             var new_points = [];
+             for (var i = 0; i < points.length; i++) {
     		 new_points.push([points[i].x, points[i].y]);
-                 }
+             }
     	     return(new_points);
     	 }
 
@@ -364,29 +367,31 @@
     	     svg.appendChild(label);
     	 }
      }
-        </script>
+    </script>
 
-        <script>
-         // Toggle path visibility
-         function togglePathColor() { //BUG COLOR NOT CHANGING
+    <script>
+     // Toggle path visibility
+     function togglePathColor() { //BUG COLOR NOT CHANGING
     	 var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-       if (x.classList.contains('active-stroke')) {
+	 if (x.classList.contains('active-stroke')) {
     	     x.classList.remove('active-stroke');
+    	     x.classList.add('white-stroke');
     	 } else {
+    	     x.classList.remove('white-stroke');
     	     x.classList.add('active-stroke');
     	 }
-         }
-        </script>
+     }
+    </script>
 
-        <script type="text/ecmascript">
-         // Allow points to be moved manually
-         // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
-         var selectedElement = 0;
-         var currentX = 0;
-         var currentY = 0;
-         var currentMatrix = 0;
+    <script type="text/ecmascript">
+     // Allow points to be moved manually
+     // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
+     var selectedElement = 0;
+     var currentX = 0;
+     var currentY = 0;
+     var currentMatrix = 0;
 
-         function selectElement(evt) {
+     function selectElement(evt) {
     	 selectedElement = evt.target;
     	 currentX = evt.clientX;
     	 currentY = evt.clientY;
@@ -399,8 +404,8 @@
     	 selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
     	 selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
     	 selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
-         }
-         function moveElement(evt){
+     }
+     function moveElement(evt){
     	 //console.log(selectedElement);
     	 dx = evt.clientX - currentX;
     	 dy = evt.clientY - currentY;
@@ -411,8 +416,8 @@
     	 selectedElement.setAttributeNS(null, "transform", newMatrix);
     	 currentX = evt.clientX;
     	 currentY = evt.clientY;
-         }
-         function deselectElement(evt){
+     }
+     function deselectElement(evt){
     	 if(selectedElement != 0){
     	     selectedElement.removeAttributeNS(null, "onmousemove");
     	     selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
@@ -432,10 +437,10 @@
      }
 
      function removeOptions(selectElement) {
-      for (var i = selectElement.length - 1; i >= 0; i--) {
-        selectElement.remove(i);
-      }
-    }
+	 for (var i = selectElement.length - 1; i >= 0; i--) {
+             selectElement.remove(i);
+	 }
+     }
      function setImage(imageSrc) {
          imageSrc = imageSrc.replace('data:image/svg+xml;base64,', '');
          imageSrc = b64DecodeUnicode(imageSrc);
@@ -444,7 +449,7 @@
          paths = document.getElementsByTagName('path'); // resetting the paths and path variable
          path = paths[0]; // redefines path as the first path of the new
          addPaths(); //add new path options from new SVG (ImageSrc)
-	       draw();
+	 draw();
      }
 
      // File upload
