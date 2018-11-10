@@ -10,6 +10,14 @@
 	    crossorigin="anonymous"></script>
 
 	<title>Connect The Dots Generator</title>
+
+  <style>
+
+    .active-stroke {
+      stroke: red;
+    }
+
+  </style>
     </head>
 
     <body onload="draw()">
@@ -34,7 +42,7 @@
 				    <input type="file" id="fileUpload" type="button" class="btn btn-block"  style="background-color:#fff">
 				</div>
 				<br>
-				<!--- TODO: Add path number selector here -->
+				<!--- Added path number selector here -->
         <label for="paths">Choose Path:</label>
         <select id = "pathNumber" style = "width: 100%;padding: 3px;" onchange = "changePath()" name = "paths"></select>
         <br>
@@ -236,7 +244,7 @@
     <script>
      // Helper functions
      function angle(p1, p2) {
-         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); 
+         var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
          while (angle < 0) {
              angle += 2 * Math.PI;
          }
@@ -248,30 +256,33 @@
      function deg(rad) {
          return rad * 180 / Math.PI;
      }
-     //ADDED PATH SELECTOR
+
      var paths = document.getElementsByTagName('path');
      var pathSelector = document.querySelector('#pathNumber');
-     for(var i = 0; i < paths.length; i++) {
+     var path = paths[0];
+     var previousStrokeColor;
+
+     //ADDED CHANGE PATH FUNCTION
+     function changePath() { //every time the select element changes, changePath is invoked
+         path.classList.remove('active-stroke'); // set the currently selected path stroke back to its original color
+         path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
+         path.classList.add('active-stroke'); // add the class 'active-stroke' to the new selected path
+         draw();
+     }
+     // this function adds the path options to the path selector
+     function addPaths() {
+       for(let i = 0; i < paths.length; i++) {
          var pathOption = document.createElement('option');
          pathOption.value = paths[i];
          pathOption.text = `Path ${i}`;
          pathSelector.appendChild(pathOption);
-      }
-
-     //ADDED CHANGE PATH FUNCTION
-     function changePath() { //every time the select element changes, changePath is invoked
-         path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-         console.log(pathSelector.selectedIndex);
-         draw();
+       }
      }
+     addPaths() // call this function to populate the path selector
+
      // Main draw function
      function draw() {
     	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
-    	 var path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex]; // assumes 1st path is the one we are making into dots
-    	 // TODO: allow user to select path instead
-    	 // ie. pseudocode:
-    	 // var i = document.getElementById("pathNumber").value; // where body contains interactive element with id 'pathNumber'
-    	 // var path = document.getElementById('container').getElementsByTagName('path')[i];
 
     	 // parse user input
     	 var samples = parseInt(document.getElementById("numSamples").value);
@@ -280,10 +291,8 @@
     	 var fontSize = parseInt(document.getElementById("fontSize").value);
     	 var offsetX = parseInt(document.getElementById("offsetX").value);
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
-    	 var points = pointsFromPath(path, samples)
-    	 path.setAttribute('stroke', "red");
-    	 path.setAttribute('style', "fill:white");
-    	 path.setAttribute('fill', "white");
+    	 var points = pointsFromPath(path, samples);
+       path.classList.add('active-stroke');
 
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
@@ -315,13 +324,14 @@
     	 function pointsFromPath(path, samples){
     	     var points = [];
     	     var len  = path.getTotalLength();
+           console.log(len);
     	     var step = step=len/samples;
     	     for (var i = 0; i <= len; i += step) {
-    		 var p = path.getPointAtLength(i);
-    		 points.push(p);
+    		   var p = path.getPointAtLength(i);
+    		   points.push(p);
     	     }
                  for (var k = 0; k < 5; k++) {
-    		 points = deletePoints(points);
+    		           points = deletePoints(points);
                  }
                  var new_points = [];
                  for (var i = 0; i < points.length; i++) {
@@ -358,12 +368,12 @@
 
         <script>
          // Toggle path visibility
-         function togglePathColor() {
+         function togglePathColor() { //BUG COLOR NOT CHANGING
     	 var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-    	 if (x.getAttribute('stroke') === "transparent") {
-    	     x.setAttribute('stroke', "red");
+       if (x.classList.contains('active-stroke')) {
+    	     x.classList.remove('active-stroke');
     	 } else {
-    	     x.setAttribute('stroke', "transparent");
+    	     x.classList.add('active-stroke');
     	 }
          }
         </script>
@@ -421,11 +431,20 @@
 	 }).join(''));
      }
 
+     function removeOptions(selectElement) {
+      for (var i = selectElement.length - 1; i >= 0; i--) {
+        selectElement.remove(i);
+      }
+    }
      function setImage(imageSrc) {
          imageSrc = imageSrc.replace('data:image/svg+xml;base64,', '');
          imageSrc = b64DecodeUnicode(imageSrc);
          document.getElementById("container").innerHTML = imageSrc;
-	 draw();
+         removeOptions(pathSelector); //REMOVE THE OPTIONS FROM THE PREVIOUS SVG IMAGE
+         paths = document.getElementsByTagName('path'); // resetting the paths and path variable
+         path = paths[0]; // redefines path as the first path of the new
+         addPaths(); //add new path options from new SVG (ImageSrc)
+	       draw();
      }
 
      // File upload
