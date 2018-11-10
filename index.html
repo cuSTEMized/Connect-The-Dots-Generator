@@ -12,8 +12,9 @@
 	<title>Connect The Dots Generator</title>
 
   <style>
+
     .active-stroke {
-      stroke: "red";
+      stroke: red;
     }
 
   </style>
@@ -263,10 +264,9 @@
 
      //ADDED CHANGE PATH FUNCTION
      function changePath() { //every time the select element changes, changePath is invoked
-         path.style.stroke = previousStrokeColor; // set the currently selected path stroke to its original color
+         path.classList.remove('active-stroke'); // set the currently selected path stroke back to its original color
          path = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-         path.classList.add('active-stroke');
-         console.log(previousStrokeColor);
+         path.classList.add('active-stroke'); // add the class 'active-stroke' to the new selected path
          draw();
      }
      // this function adds the path options to the path selector
@@ -292,8 +292,8 @@
     	 var offsetX = parseInt(document.getElementById("offsetX").value);
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
     	 var points = pointsFromPath(path, samples);
-       previousStrokeColor = path.style.stroke; // save the original stroke color before changing to red
-       path.style.stroke = "red";
+       path.classList.add('active-stroke');
+
 
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
@@ -371,10 +371,10 @@
          // Toggle path visibility
          function togglePathColor() { //BUG COLOR NOT CHANGING
     	 var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
-    	 if (x.style.stroke != "red") {
-    	     x.style.stroke = 'red';
+       if (x.classList.contains('active-stroke')) {
+    	     x.classList.remove('active-stroke');
     	 } else {
-    	     x.style.stroke = previousStrokeColor;
+    	     x.classList.add('active-stroke');
     	 }
          }
         </script>
