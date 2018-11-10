@@ -279,6 +279,7 @@
        }
      }
      addPaths() // call this function to populate the path selector
+
      // Main draw function
      function draw() {
     	 var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
@@ -291,8 +292,9 @@
     	 var offsetX = parseInt(document.getElementById("offsetX").value);
     	 var offsetY = parseInt(document.getElementById("offsetY").value);
     	 var points = pointsFromPath(path, samples);
-       previousStrokeColor = path.style.stroke; //define the original stroke color before changing to red
+       previousStrokeColor = path.style.stroke; // save the original stroke color before changing to red
        path.style.stroke = "red";
+
     	 // Delete all circles and text upon redraw
     	 var paras = document.getElementsByClassName('temp');
     	 while(paras[0]) {
@@ -442,7 +444,7 @@
          removeOptions(pathSelector); //REMOVE THE OPTIONS FROM THE PREVIOUS SVG IMAGE
          paths = document.getElementsByTagName('path'); // resetting the paths and path variable
          path = paths[0]; // redefines path as the first path of the new
-         addPaths(); //ADD NEW PATH OPTIONS FROM NEW SVG (ImageSrc)
+         addPaths(); //add new path options from new SVG (ImageSrc)
 	       draw();
      }
 
