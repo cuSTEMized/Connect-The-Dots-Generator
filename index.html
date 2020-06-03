@@ -307,6 +307,8 @@
         var labellerFunc = eval(document.getElementById("labeller").value);
         var samples = parseInt(document.getElementById("numSamples").value);
         document.getElementById("numSamplesValue").textContent = samples;
+        var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
+        document.getElementById("pointAlphaValue").textContent = pointAlpha;
         var radius = parseInt(document.getElementById("radius").value);
         document.getElementById("radiusValue").textContent = radius;
         var fontSize = parseInt(document.getElementById("fontSize").value);
@@ -374,6 +376,7 @@
     }
 
     function filterPointsOnAngle(points) {
+        var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
         var excludedPoints = [];
         for (var i = 0; i < points.length - 2; i += 1) {
             if (Math.abs(180 - deg(angle3(points[i], points[i + 1], points[i + 2]))) < pointAlpha) {
@@ -384,7 +387,7 @@
         return points.filter((_, i) => !excludedPoints.includes(i));
     }
 
-    function togglePathColor() { //BUG COLOR NOT CHANGING
+    function togglePathColor() {
         var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
         if (x.classList.contains('active-stroke')) {
             x.classList.remove('active-stroke');
