@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <title>Connect The Dots Generator</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <style>
+      textarea { width: 100%; }
+      .active-stroke { stroke: red; }
+      .white-stroke { stroke: white; }
+      svg { max-height: 100vh; }
+      .hide-drawing svg * { display: none; }
+      svg .temp { display: block !important; }
+    </style>
+  </head>
+  <body onload="draw()">
+    <div class="container-fluid" style="margin:0px; padding:0px">
+        <div class="panel" style="background-color: rgba(0, 0, 0, 0.1);">
+        <div class="panel-heading"  style="background-color:#fff; color:#666; height: 50px; border-radius: 0 !important;">
+            <h2 align="center" style="padding:0px; margin:0px;">
+            Connect The Dots Generator
+            <span class="pull-right panel-collapse-clickable" data-toggle="collapse" data-parent="#accordion" href="#filterPanel">
+                <i class="glyphicon glyphicon-chevron-up"></i>
+            </span>
+            </h2>
+        </div>
+        <div id="filterPanel" class="panel-collapse panel-collapse collapse in">
+            <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                <b>Instructions</b>: Upload an SVG image. The first Path object in the SVG will be used to create a connect-the-dots game. Use the options to automatically set the number of dots, dot sizes, and other features. You can also manually drag points and text for fine tuning. Toggle the Path line off using the Toggle Path button when you are done.
+                <hr>
+                <div id="userActions">
+                    <input type="file" id="fileUpload" type="button" class="btn btn-block"  style="background-color:#fff">
+                </div>
+                <br>
+                <!--- Added path number selector here -->
+                <label for="paths">Choose Path:</label>
+                <select id = "pathNumber" style = "width: 100%;padding: 3px;" onchange = "changePath()" name = "paths"></select>
+                <br>
+                <br>
+                <button type="button" class="btn btn-block" onclick="togglePathColor()" style="background-color:#fff">Toggle Path</button>
+                <br>
+                <button type="button" class="btn btn-block" onclick="toggleBackgroundVisibility()" style="background-color:#fff">Toggle Background Visibility</button>
+                <br>
+                <button type="button" class="btn btn-block" onclick="toggleLines()" style="background-color:#fff">Toggle Lines</button>
+                <br>
+                <label for="labeller">Function to generate dots indices:</label>
+                <textarea id="labeller" onchange="draw()">(pathIndex, i) => ((pathIndex ? String.fromCharCode(64 + pathIndex) : '') + (i + 1))</textarea>
+                <br><br>
+                </div>
+                <div class="col-md-6">
+                Number of points: <span id="numSamplesValue"></span>
+                <input type="range" min="1" max="300" value="50" id="numSamples" onchange="draw()">
+                <br>
+                Point size: <span id="radiusValue"></span>
+                <input type="range" min="1" max="50" value="5" id="radius" onchange="draw()">
+                <br>
+                Text font size: <span id="fontSizeValue"></span>
+                <input type="range" min="0" max="50" value="10" id="fontSize" onchange="draw()">
+                <br>
+                Text offset X: <span id="offsetXValue"></span>
+                <input type="range" min="-50" max="50" value="10" id="offsetX" onchange="draw()">
+                <br>
+                Text offset Y: <span id="offsetYValue"></span>
+                <input type="range" min="-50" max="50" value="-8" id="offsetY" onchange="draw()">
+                <br>
+                Filter out points forming an angle above : <span id="pointAlphaValue"></span>
+                <input type="range" min="1" max="100" value="20" id="pointAlpha" onchange="draw()">
+                <br>
+                <label for="customPointFilter">Alternate custom function to filter points:</label>
+                <textarea id="customPointFilter" onchange="draw()" placeholder="points => points.slice(0, 50)"></textarea>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div id='container' align="center">
+        <!-- Default SVG Image-->
+        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+         width="500px" height="500px" viewBox="0 0 500 500" enable-background="new 0 0 500 500" xml:space="preserve">
+        <path fill="none" stroke="#F8B747" stroke-miterlimit="10" d="M461.461,199.724c-0.321-2.895-8.578-23.998-23.328-43.475
+                                         c16.377-63.024-2.257-83.485-2.257-83.485c-23.099-1.175-52.221,29.076-62.409,40.558c-10.323-2.599-19.036-2.604-28.346-1.939
+                                         c-12.835,0.916-24.679,3.335-35.598,7.618c-9.784-10.866-35.295-36.036-62.879-37.547c0,0-15.653,40.09,11.347,82.595
+                                         c-8.19,13.07-13.189,25.829-14.314,34.14c-20.892,2.546-53.828,5.597-79.096,3.465c-40.067-3.378-63.722,4.83-83.996,18.346
+                                         c-20.276,13.515-27.999,68.548-24.138,87.854c3.862,19.312,27.033,63.24,27.033,63.24s-4.826,19.309-2.413,26.068
+                                         c2.413,6.756,27.033,11.585,43.446,10.619c16.412-0.966,24.619-9.655,25.584-14c0.964-4.344-5.311-19.309-22.689-21.723
+                                         c0,0,2.821-12.164,11.104-19.791c11.667-10.744,17.861-19.311,17.861-19.311s63.238,20.273,107.65,12.068
+                                         c0,0,31.377,61.554,38.621,62.878c7.236,1.324,49.233-2.055,52.132-5.434c2.896-3.379-0.482-27.997-23.653-27.032
+                                         c0,0-8.207-22.207-9.655-28.482c0,0,55.356,3.863,88.983-30.893c23.219-23.996,19.363-56.494,14.273-74.007
+                                         c15.751-11.113,27.071-21.739,28.047-24.472c2.415-6.759-8.69-7.723-8.69-7.723S461.943,204.068,461.461,199.724z"/>
+        <path fill="#E2E2E2" d="M138.513,352.268c-8.283,7.627-11.104,19.791-11.104,19.791c17.378,2.414,23.653,17.379,22.689,21.723
+                    c-0.208,0.939-0.779,2.088-1.676,3.313c13.438,0.261,35.903-0.522,36.916-8.622c1.449-11.588-19.793-16.896-19.793-16.896
+                    c0.571-6.842,8.549-21.428,14.986-32.225c-14.451-3.289-24.157-6.395-24.157-6.395S150.18,341.521,138.513,352.268z"/>
+        <path fill="#DA9A36" d="M264.023,345.025c0,0-0.236-0.237-0.649-0.654c-0.372-0.441-0.981-1.025-1.567-1.816
+                    c-0.578-0.791-1.339-1.669-1.994-2.703c-0.647-1.035-1.348-2.143-2.041-3.248c-0.594-1.164-1.188-2.328-1.744-3.424
+                    c-0.557-1.092-0.914-2.205-1.279-3.119c-0.367-0.918-0.525-1.758-0.688-2.312c-0.108-0.576-0.174-0.908-0.174-0.908
+                    s0.207,0.267,0.573,0.722c0.327,0.476,0.877,1.1,1.417,1.912c0.525,0.818,1.253,1.715,1.871,2.762
+                    c0.636,1.035,1.312,2.143,1.993,3.248c0.603,1.149,1.207,2.299,1.772,3.377c0.576,1.072,0.973,2.162,1.387,3.045
+                    c0.41,0.895,0.638,1.705,0.851,2.242C263.925,344.705,264.023,345.025,264.023,345.025"/>
+        <path fill="#BCBBBC" d="M321.468,346.955c0,0-0.186-0.289-0.51-0.801c-0.28-0.527-0.771-1.247-1.204-2.163
+                    c-0.424-0.919-1.02-1.956-1.487-3.13c-0.479-1.163-0.99-2.406-1.503-3.649c-0.431-1.274-0.861-2.547-1.265-3.735
+                    c-0.422-1.188-0.66-2.354-0.964-3.314c-0.291-0.967-0.429-1.816-0.593-2.391c-0.125-0.59-0.196-0.929-0.196-0.929
+                    s0.216,0.271,0.595,0.742c0.331,0.501,0.885,1.185,1.367,2.084s1.123,1.921,1.621,3.089c0.497,1.168,1.027,2.415,1.557,3.658
+                    c0.418,1.287,0.837,2.572,1.23,3.777c0.392,1.203,0.589,2.389,0.839,3.371c0.241,0.99,0.31,1.856,0.418,2.444
+                    C321.434,346.611,321.468,346.955,321.468,346.955"/>
+        <path fill="#BCBBBC" d="M156.374,332.957c0,0,0.155-0.354,0.428-0.967c0.309-0.584,0.671-1.479,1.233-2.458
+                    c0.573-0.972,1.146-2.171,1.901-3.353c0.739-1.193,1.528-2.465,2.316-3.738c0.863-1.221,1.705-2.455,2.479-3.619
+                    c0.766-1.17,1.61-2.184,2.237-3.113c0.628-0.927,1.271-1.643,1.63-2.193c0.412-0.527,0.647-0.832,0.647-0.832
+                    s-0.091,0.371-0.252,1.024c-0.198,0.64-0.451,1.577-0.914,2.624c-0.474,1.036-0.963,2.289-1.673,3.52
+                    c-0.704,1.232-1.469,2.541-2.257,3.83c-0.88,1.228-1.761,2.457-2.589,3.605c-0.831,1.146-1.758,2.107-2.483,2.979
+                    c-0.734,0.865-1.461,1.502-1.92,1.981C156.659,332.699,156.374,332.957,156.374,332.957"/>
+        <path fill="#DA9A36" d="M241.18,210.91c0,0-0.015,0.329-0.042,0.943c-0.02,0.614-0.093,1.51-0.08,2.657
+                    c-0.086,2.284,0.046,5.552,0.413,9.428c0.369,3.882,1.223,8.351,2.395,13.061c1.179,4.714,2.847,9.637,4.861,14.413
+                    c1.933,4.818,4.188,9.51,6.501,13.812c2.313,4.297,4.514,8.309,6.529,11.67c2.004,3.377,3.678,6.194,4.844,8.164
+                    c1.166,1.978,1.832,3.108,1.832,3.108s-0.8-1.042-2.195-2.862c-1.354-1.854-3.356-4.457-5.555-7.729
+                    c-2.184-3.274-4.766-7.094-7.18-11.405c-2.423-4.305-4.809-9.022-6.873-13.894c-1.962-4.918-3.564-9.977-4.675-14.818
+                    c-1.119-4.842-1.567-9.477-1.756-13.432c-0.167-3.966,0.15-7.265,0.42-9.547c0.125-1.143,0.31-2.031,0.401-2.64
+                    C241.126,211.232,241.18,210.91,241.18,210.91"/>
+        <path fill="#DA9A36" d="M253.889,217.209c0,0,0.418,0.922,1.146,2.535c0.689,1.624,1.797,3.892,3.125,6.596
+                    c1.27,2.731,3.043,5.767,4.863,9.044c1.867,3.255,4.021,6.629,6.32,9.899c2.254,3.3,4.661,6.499,7.053,9.389
+                    c2.435,2.852,4.654,5.578,6.767,7.727c2.069,2.188,3.804,4.024,5.082,5.237c1.255,1.25,1.973,1.964,1.973,1.964
+                    s-0.821-0.591-2.26-1.629c-1.401-1.08-3.449-2.592-5.685-4.66c-2.267-2.037-4.832-4.51-7.373-7.358
+                    c-2.506-2.878-5.033-6.071-7.42-9.377c-2.26-3.39-4.362-6.881-6.181-10.237c-1.776-3.379-3.194-6.651-4.305-9.482
+                    c-1.154-2.821-1.853-5.269-2.373-6.959C254.156,218.185,253.889,217.209,253.889,217.209"/>
+        <path fill="#A8A8A8" d="M115.097,389.79c0,0,0.341-0.092,0.974-0.153c0.623-0.025,1.587-0.044,2.641,0.366
+                    c1.032,0.405,2.254,1.011,3.249,2.021c1.001,0.998,1.881,2.237,2.528,3.611c0.537,1.396,0.853,2.839,1.031,4.178
+                    c0.183,1.345,0.065,2.603,0.026,3.653c-0.048,1.057-0.26,1.925-0.341,2.531c-0.132,0.608-0.208,0.954-0.208,0.954
+                    s-0.084-0.346-0.232-0.945c-0.101-0.604-0.338-1.46-0.49-2.476c-0.146-1.02-0.453-2.177-0.694-3.392
+                    c-0.252-1.215-0.634-2.465-1.177-3.614c-0.446-1.165-1.104-2.265-1.879-3.158c-0.768-0.89-1.551-1.707-2.373-2.222
+                    c-0.808-0.519-1.56-0.918-2.134-1.074C115.453,389.857,115.097,389.79,115.097,389.79"/>
+        <path fill="#A8A8A8" d="M129.397,387.52c0,0,0.331-0.02,0.908-0.053c0.293-0.008,0.647,0.014,1.056,0.068
+                    c0.414,0.033,0.879,0.107,1.355,0.287c0.972,0.303,2.091,0.794,3.127,1.576c1.011,0.805,1.964,1.811,2.788,2.93
+                    c0.698,1.199,1.242,2.474,1.581,3.723c0.305,1.26,0.308,2.487,0.198,3.497c-0.023,0.509-0.141,0.964-0.272,1.358
+                    c-0.113,0.396-0.235,0.728-0.358,0.993l-0.412,0.812c0,0-0.006-0.327-0.02-0.9c0.031-0.273-0.006-0.611-0.054-0.993
+                    c-0.031-0.38-0.082-0.798-0.158-1.247c-0.076-0.909-0.482-1.904-0.807-2.948c-0.375-1.042-0.929-2.088-1.593-3.052
+                    c-0.618-0.992-1.357-1.916-2.164-2.672c-0.828-0.715-1.581-1.484-2.383-1.914c-0.383-0.25-0.747-0.463-1.083-0.643
+                    c-0.33-0.197-0.628-0.365-0.89-0.447C129.695,387.656,129.397,387.52,129.397,387.52"/>
+        <path fill="#A8A8A8" d="M327.471,389.678c0,0,0.308-0.111,0.889-0.221c0.571-0.062,1.464-0.159,2.466,0.145
+                    c0.981,0.299,2.162,0.763,3.156,1.625c0.999,0.847,1.902,1.926,2.612,3.145c0.599,1.249,1.001,2.554,1.267,3.776
+                    c0.271,1.226,0.251,2.394,0.295,3.362c0.032,0.978-0.107,1.794-0.142,2.357c-0.082,0.568-0.129,0.896-0.129,0.896
+                    s-0.111-0.306-0.308-0.85c-0.15-0.543-0.456-1.311-0.686-2.228c-0.223-0.92-0.612-1.954-0.937-3.047
+                    c-0.331-1.089-0.78-2.201-1.37-3.212c-0.49-1.03-1.167-1.989-1.933-2.754c-0.765-0.762-1.523-1.469-2.307-1.894
+                    c-0.769-0.43-1.479-0.766-2.016-0.885C327.8,389.727,327.471,389.678,327.471,389.678"/>
+        <path fill="#A8A8A8" d="M347.85,403.311c0,0,0.017-0.315,0.043-0.866c0.072-0.528,0.029-1.303-0.004-2.176
+                    c0.019-0.879-0.255-1.88-0.433-2.919c-0.22-1.049-0.601-2.123-1.088-3.139c-0.433-1.042-0.98-2.041-1.613-2.9
+                    c-0.659-0.826-1.221-1.695-1.89-2.269c-0.628-0.608-1.18-1.153-1.617-1.456c-0.429-0.346-0.675-0.545-0.675-0.545
+                    s0.312,0.055,0.862,0.146c0.53,0.144,1.351,0.322,2.187,0.83c0.851,0.474,1.817,1.135,2.657,2.049
+                    c0.812,0.934,1.55,2.035,2.161,3.222c0.474,1.237,0.804,2.524,0.956,3.754c0.125,1.234-0.026,2.396-0.241,3.346
+                    c-0.182,0.96-0.591,1.692-0.84,2.184C348.019,403.04,347.85,403.311,347.85,403.311"/>
+        <path fill="#DA9A36" d="M323.521,288.874c0,0,1.021,0.075,2.813,0.207c0.888,0.11,1.973,0.146,3.219,0.177
+                    c1.239,0.055,2.639,0.09,4.163,0.075c3.046,0.087,6.592-0.258,10.361-0.597c3.768-0.42,7.747-1.149,11.661-2.148
+                    c3.918-0.968,7.771-2.197,11.294-3.607c3.482-1.483,6.771-2.849,9.417-4.364c1.352-0.707,2.566-1.397,3.634-2.033
+                    c1.082-0.608,2.027-1.156,2.756-1.673c1.517-0.96,2.383-1.512,2.383-1.512s-0.771,0.681-2.124,1.869
+                    c-0.681,0.592-1.533,1.268-2.542,2.022c-0.989,0.774-2.136,1.617-3.456,2.422c-2.594,1.701-5.76,3.485-9.307,5.08
+                    c-3.573,1.534-7.496,2.901-11.504,3.998c-4.051,0.923-8.155,1.569-12.027,1.903c-3.881,0.269-7.515,0.188-10.6-0.086
+                    c-1.547-0.09-2.955-0.291-4.192-0.506c-1.244-0.191-2.317-0.384-3.196-0.586C324.523,289.109,323.521,288.874,323.521,288.874"/>
+        <path fill="#DA9A36" d="M155.195,333.357c0,0,0.38-0.643,1.048-1.766c0.703-1.092,1.636-2.71,2.89-4.553
+                    c1.253-1.844,2.678-4.02,4.152-6.312c1.469-2.297,2.818-4.858,3.56-7.569c0.833-2.685,1.068-5.552,0.924-8.242
+                    c-0.159-2.692-0.451-5.243-0.885-7.407c-0.429-2.164-0.744-4-1.031-5.267c-0.245-1.283-0.386-2.017-0.386-2.017
+                    s0.294,0.686,0.807,1.887c0.463,1.218,1.211,2.936,1.849,5.092c0.62,2.154,1.354,4.714,1.608,7.574
+                    c0.252,2.852,0.116,5.99-0.71,9.018c-0.936,3-2.494,5.688-4.098,8.016c-1.606,2.344-3.372,4.266-4.772,5.994
+                    c-1.416,1.721-2.707,3.068-3.558,4.053C155.705,332.812,155.195,333.357,155.195,333.357"/>
+        <path fill="#DA9A36" d="M321.729,347.447c0,0-0.21-0.279-0.579-0.771c-0.323-0.508-0.868-1.202-1.358-2.108
+                    c-0.486-0.908-1.131-1.941-1.645-3.12c-0.502-1.188-1.036-2.448-1.57-3.714c-0.407-1.31-0.812-2.621-1.194-3.853
+                    c-0.37-1.229-0.539-2.437-0.756-3.442c-0.209-1.008-0.241-1.892-0.322-2.49c-0.031-0.609-0.054-0.961-0.054-0.961
+                    s0.175,0.305,0.479,0.838c0.255,0.545,0.713,1.295,1.115,2.234c0.391,0.941,0.962,2.004,1.402,3.196
+                    c0.465,1.181,0.964,2.438,1.457,3.701c0.436,1.283,0.867,2.565,1.271,3.769c0.43,1.193,0.681,2.375,0.99,3.348
+                    c0.299,0.979,0.43,1.846,0.585,2.43C321.665,347.104,321.729,347.447,321.729,347.447"/>
+        <path fill="#E2E2E2" d="M424.452,198.758c-2.573-0.323-30.896-15.449-33.471-14.806c-2.573,0.646-14.804,9.978-19.952,7.36
+                    c-5.15-2.619-21.646-26.83-21.646-26.83c9.299-18.6,3.565-44.235,1.024-53.381c-1.749,0.064-3.507,0.155-5.287,0.282
+                    c-0.569,0.041-1.122,0.105-1.688,0.151c-1.656,3.674-11.266,26.838-3.297,52.948c0,0-14.808,24.211-17.383,26.83
+                    c-2.573,2.618-10.939-3.174-14.803-2.211c-3.86,0.967-21.562,15.126-24.136,16.093c-2.355,0.883-27.931-8.41-40.125-1.013
+                    c0.025,0.114,0.027,0.258,0.057,0.369c2.413,9.171,23.171,13.516,23.171,13.516s-7.725,3.381-2.414,11.104
+                    c5.311,7.723,41.033,32.824,80.616,41.514c39.584,8.689,105.236-46.339,107.649-53.1c2.411-6.759-8.69-7.723-8.69-7.723
+                    s17.862-5.793,17.38-10.137c-0.095-0.852-0.883-3.293-2.314-6.788C446.921,189.596,426.689,199.038,424.452,198.758"/>
+        <path fill="#E2E2E2" d="M385.189,121.038c0,0,20.273-31.379,45.376-33.792c0,0,11.586,27.032,0,64.686
+                    C430.565,151.932,404.498,127.796,385.189,121.038"/>
+        <path fill="#E2E2E2" d="M298.296,129.244c0,0-25.585-31.861-43.927-31.861c0,0-11.586,25.102,12.066,60.343
+                    C266.438,157.726,278.443,138.772,298.296,129.244"/>
+        <path fill="#C22222" d="M317.037,212.95c0,0,11.189,32.471,30.337,33.758c19.149,1.289,28.806-33.758,28.806-33.758
+                    s-5.796,12.838-14.161,13.803c-8.365,0.969-12.874-1.606-12.874-1.606s-10.784,3.461-16.817,2.695
+                    C326.296,227.078,317.037,212.95,317.037,212.95"/>
+        <path fill="#F09C9D" d="M333.396,227.93c0,0-4.849,14.139-1.95,21.607c2.895,7.471,9.806,12.941,20.995,12.62
+                    c11.185-0.323,15.689-14.146,15.689-18.659c0-8.942-5.051-16.808-5.051-16.808s-8.192,0.866-13.938-1.543
+                    C342.336,228.43,333.396,227.93,333.396,227.93"/>
+        <path fill="none" stroke="#1D1E1C" stroke-miterlimit="10" d="M349.385,249.537c0,0-4.423-12.804-0.24-24.39"/>
+        <path fill="#1D1E1C" d="M336.586,202.619c3.229-5.149,18.03-5.149,23.824,0c5.792,5.15-7.077,12.98-12.047,11.865
+                    C341.557,212.957,333.832,207.016,336.586,202.619"/>
+        <path fill="#1D1E1C" d="M326.938,171.321c0,3.777-2.951,6.839-6.597,6.839c-3.643,0-6.596-3.062-6.596-6.839
+                    c0-3.776,2.953-6.838,6.596-6.838C323.986,164.483,326.938,167.545,326.938,171.321"/>
+        <path fill="#1D1E1C" d="M385.789,171.321c0,3.777-2.952,6.839-6.597,6.839c-3.646,0-6.6-3.062-6.6-6.839
+                    c0-3.776,2.954-6.838,6.6-6.838C382.837,164.483,385.789,167.545,385.789,171.321"/>
+        <path fill="#373736" d="M298.296,199.401c0,0,0.515-0.04,1.459-0.18c0.943-0.143,2.327-0.388,4.021-0.88
+                    c1.052-0.312,1.805-0.458,4.469-1.705c0.378,0.553,0.821,1.358,1.333,2.188c0.407,0.646,0.857,1.358,1.341,2.124
+                    c0.96,1.505,2.058,3.222,3.223,5.045c3.305,5.062,7.479,10.933,12.674,16.029c1.308,1.235,2.728,2.377,4.191,3.136
+                    c0.365,0.214,0.729,0.315,1.087,0.474c0.357,0.084,0.657,0.205,1.154,0.264c0.903,0.177,1.812,0.278,2.729,0.347
+                    c3.646,0.229,7.432-0.473,10.59-2.183c0.23-0.115,0.452-0.235,0.669-0.36c0.459-0.284,0.979-0.644,1.449-0.972
+                    c2.202,0.54,2.621,0.614,3.58,0.818c0.881,0.181,1.767,0.345,2.646,0.491c1.769,0.292,3.539,0.516,5.273,0.605
+                    c1.705,0.089,3.482,0.031,4.738-0.364c0.36-0.076,0.4-0.274,0.651-0.351c0.248-0.19,0.555-0.509,0.833-0.754
+                    c0.568-0.554,1.146-1.243,1.705-1.901c4.56-5.813,8.526-11.836,11.77-16.978c0.957-1.509,1.864-2.946,2.657-4.199
+                    c0.455-0.716,0.877-1.38,1.258-1.975c0.459-0.687,0.815-1.412,1.169-1.722c0.85,0.589,1.636,1.117,2.277,1.454
+                    c0.591,0.329,0.999,0.525,1.451,0.743c0.873,0.396,1.608,0.681,2.304,0.892c1.655,0.569,3.046,0.771,3.993,0.831
+                    c0.947,0.065,1.464,0.048,1.464,0.048s-0.501,0.097-1.464,0.184c-0.959,0.089-2.402,0.107-4.209-0.209
+                    c-0.746-0.148-1.552-0.349-2.518-0.661c-0.46-0.154-1.045-0.373-1.526-0.573c-0.426-0.176-0.798-0.339-1.199-0.561
+                    c-0.167,0.169-0.283,0.646-0.438,0.968c-0.098,0.221-0.095,0.268-0.271,0.633c-0.15,0.311-0.307,0.636-0.468,0.972
+                    c-0.65,1.344-1.426,2.87-2.275,4.452c-2.969,5.399-6.142,11.806-10.901,18.152c-0.613,0.764-1.211,1.518-1.942,2.275
+                    c-0.402,0.378-0.732,0.744-1.203,1.126c-0.562,0.356-1.212,0.853-1.763,0.994c-2.277,0.752-4.274,0.755-6.249,0.732
+                    c-1.967-0.052-3.88-0.25-5.771-0.511c-0.949-0.134-1.889-0.284-2.824-0.453c-0.859-0.146-2.252-0.441-1.856-0.341
+                    c-0.012,0.009,0.02-0.004-0.022,0.024c-0.292,0.178-0.585,0.349-0.877,0.502c-4.097,2.076-8.672,2.762-13.021,2.387
+                    c-1.088-0.107-2.161-0.257-3.21-0.488c-0.494-0.072-1.137-0.276-1.73-0.463c-0.546-0.234-1.125-0.451-1.606-0.744
+                    c-2.009-1.112-3.595-2.504-5.032-3.923c-5.619-5.785-9.055-12.19-12.117-17.542c-1.066-1.918-1.996-3.765-2.768-5.4
+                    c-0.371-0.812-0.715-1.569-1.024-2.253c-0.2-0.484-0.354-0.955-0.538-1.354c-1.177,0.446-2.71,0.762-3.668,0.909
+                    c-1.807,0.229-3.223,0.252-4.188,0.249C298.807,199.443,298.296,199.401,298.296,199.401"/>
+        <path fill="#A8A8A8" d="M158.49,382.521c0,0,0.245,0.062,0.672,0.17c0.403,0.154,1.041,0.341,1.661,0.785
+                    c0.628,0.424,1.369,0.967,1.979,1.721c0.593,0.762,1.137,1.643,1.595,2.578c0.336,0.983,0.571,1.99,0.689,2.951
+                    c0.101,0.965-0.041,1.873-0.185,2.615c-0.125,0.752-0.447,1.333-0.624,1.727c-0.228,0.379-0.356,0.599-0.356,0.599
+                    s-0.027-0.25-0.076-0.683c-0.006-0.418-0.136-1.02-0.218-1.693c-0.046-0.682-0.326-1.441-0.482-2.236
+                    c-0.189-0.802-0.48-1.63-0.845-2.416c-0.295-0.812-0.671-1.602-1.103-2.304c-0.453-0.674-0.792-1.409-1.24-1.925
+                    c-0.416-0.536-0.748-1.053-1.041-1.352C158.646,382.717,158.49,382.521,158.49,382.521"/>
+        <path fill="#A8A8A8" d="M169.318,382.604c0,0-0.083-0.03-0.186-0.137c-0.121-0.13,0.003-0.342,0.206-0.498
+                    c0.218-0.125,0.492-0.293,0.948-0.255c0.584,0.167,0.71,0.331,1.061,0.521c0.608,0.451,1.408,0.966,1.996,1.726
+                    c0.604,0.75,1.176,1.612,1.648,2.534c0.375,0.966,0.635,1.968,0.793,2.915c0.177,0.948,0.039,1.864-0.027,2.614
+                    c-0.086,0.757-0.354,1.358-0.494,1.767c-0.195,0.399-0.305,0.627-0.305,0.627s-0.049-0.246-0.133-0.678
+                    c-0.043-0.418-0.225-1.009-0.344-1.683c-0.119-0.68-0.393-1.437-0.618-2.231c-0.224-0.798-0.539-1.627-0.941-2.404
+                    c-0.314-0.819-0.719-1.604-1.166-2.303c-0.449-0.703-0.825-1.388-1.248-1.922c-0.211-0.248-0.502-0.638-0.475-0.673
+                    c-0.109-0.117-0.36-0.17-0.525-0.147c-0.169-0.017-0.367,0.097-0.297,0.171C169.264,382.602,169.318,382.604,169.318,382.604"/>
+        <path fill="#E2E2E2" d="M321.468,346.955c1.448,6.275,9.655,28.482,9.655,28.482c23.171-0.965,26.55,23.653,23.653,27.032
+                    c-0.224,0.258-0.698,0.52-1.349,0.775c21.024-0.341,35.545-7.353,31.762-19.119c-4.347-13.519-23.653-11.104-23.653-11.104
+                    c-0.487-8.789,2.232-21.359,5.044-31.645C342.541,348.414,321.468,346.955,321.468,346.955z"/>
+        <path fill="#A8A8A8" d="M358.677,384.9c0,0,0.315,0.057,0.868,0.154c0.535,0.145,1.359,0.334,2.195,0.852
+                    c0.85,0.482,1.815,1.156,2.648,2.09c0.81,0.947,1.54,2.066,2.139,3.268c0.462,1.252,0.777,2.551,0.915,3.789
+                    c0.104,1.244-0.064,2.412-0.296,3.363c-0.196,0.964-0.622,1.693-0.883,2.184c-0.308,0.467-0.481,0.736-0.481,0.736
+                    s0.022-0.317,0.063-0.872c0.08-0.529,0.054-1.31,0.035-2.188c0.033-0.884-0.227-1.896-0.386-2.943
+                    c-0.208-1.054-0.573-2.144-1.052-3.173c-0.422-1.053-0.963-2.064-1.589-2.938c-0.653-0.837-1.216-1.717-1.884-2.297
+                    c-0.627-0.617-1.175-1.172-1.617-1.477C358.924,385.102,358.677,384.9,358.677,384.9"/>
+        <path fill="#A8A8A8" d="M370.877,384.648c0.023,0.062-0.136-0.545,0.593-0.688c0.327-0.032,0.71,0.021,1.124,0.19
+                    c0.43,0.156,0.856,0.621,1.105,0.97c0.6,0.757,1.292,1.696,1.727,2.853c0.444,1.146,0.789,2.426,0.94,3.734
+                    c0.059,1.316-0.043,2.631-0.272,3.834c-0.206,1.214-0.761,2.251-1.171,3.114c-0.445,0.86-1.011,1.462-1.359,1.885
+                    c-0.403,0.386-0.636,0.609-0.636,0.609s0.091-0.305,0.25-0.831c0.19-0.503,0.331-1.269,0.556-2.118
+                    c0.212-0.862,0.315-1.884,0.418-2.955c0.109-1.065,0.104-2.218-0.043-3.345c-0.033-1.135-0.239-2.268-0.541-3.295
+                    c-0.305-1.021-0.552-2.024-0.949-2.812c-0.209-0.447-0.267-0.695-0.493-0.934c-0.209-0.234-0.46-0.41-0.671-0.463
+                    C370.957,384.225,370.86,384.698,370.877,384.648"/>
+        </svg>
+    </div>
+  </body>
+    <script>
+    // Helper functions
+    function angle(p1, p2) {
+        var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        while (angle < 0) {
+            angle += 2 * Math.PI;
+        }
+        return angle;
+    }
+    function angle3(p1, p2, p3) {
+        return Math.abs(angle(p1, p2) - angle(p3, p2));
+    }
+    function deg(rad) {
+        return rad * 180 / Math.PI;
+    }
+
+    var paths = Array.from(document.getElementsByTagName('path'));
+    var pathSelector = document.getElementById('pathNumber');
+    var selectedPaths = [paths[0]];
+    var previousStrokeColor;
+
+    //ADDED CHANGE PATH FUNCTION
+    function changePath() { //every time the select element changes, changePath is invoked
+        selectedPaths.forEach((path) => path.classList.remove('active-stroke')); // set the currently selected path stroke back to its original color
+        if (pathSelector.value === 'ALL') {
+            selectedPaths = paths;
+        } else {
+            selectedPaths = [paths[pathSelector.selectedIndex]];
+        }
+        selectedPaths.forEach((path) => path.classList.add('active-stroke')); // add the class 'active-stroke' to the new selected path
+        draw();
+    }
+    // this function adds the path options to the path selector
+    function addPathOptions() {
+        for(let i = 0; i < paths.length; i++) {
+            var pathOption = document.createElement('option');
+            pathOption.value = paths[i];
+            pathOption.text = `Path ${i}`;
+            pathSelector.appendChild(pathOption);
+        }
+        var pathOption = document.createElement('option');
+        pathOption.value = 'ALL';
+        pathOption.text = 'All Paths';
+        pathSelector.appendChild(pathOption);
+    }
+    addPathOptions() // call this function to populate the path selector
+
+    // Main draw function
+    function draw() {
+        var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
+
+        // parse user input
+        var labellerFunc = eval(document.getElementById("labeller").value);
+        var samples = parseInt(document.getElementById("numSamples").value);
+        document.getElementById("numSamplesValue").textContent = samples;
+        var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
+        document.getElementById("pointAlphaValue").textContent = pointAlpha;
+        var radius = parseInt(document.getElementById("radius").value);
+        document.getElementById("radiusValue").textContent = radius;
+        var fontSize = parseInt(document.getElementById("fontSize").value);
+        document.getElementById("fontSizeValue").textContent = fontSize;
+        var offsetX = parseInt(document.getElementById("offsetX").value);
+        document.getElementById("offsetXValue").textContent = offsetX;
+        var offsetY = parseInt(document.getElementById("offsetY").value);
+        document.getElementById("offsetYValue").textContent = offsetY;
+        var pointsPerPathIndex = pointsFromPath(selectedPaths, samples); // Structure: pathIndex -> [ pointIndex -> [ x, y ] ]
+        selectedPaths.forEach((path) => path.classList.add('active-stroke'));
+
+        // Delete all circles and text upon redraw
+        var paras = document.getElementsByClassName('temp');
+        while(paras[0]) {
+            paras[0].parentNode.removeChild(paras[0]);
+        }
+
+        // Draw points as circles
+        pointsPerPathIndex.forEach((points, pathIndex) => {
+            for (i = 0; i < points.length-1; i++) {
+                var point = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                point.setAttribute("cx", points[i][0]);
+                point.setAttribute("cy", points[i][1]);
+                point.setAttribute("r", radius);
+                point.setAttribute("fill", "black");
+                point.setAttribute("class", "draggable temp");
+                point.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+                point.setAttribute("onmousedown", "selectElement(evt)");
+                svg.appendChild(point);
+                var label = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+                label.setAttribute("x", points[i][0]+offsetX);
+                label.setAttribute("y", points[i][1]+offsetY);
+                label.setAttribute("fill", "black");
+                label.setAttribute("text-anchor", "middle");
+                label.setAttribute("font-size", fontSize);
+                label.textContent = labellerFunc(pathIndex, i);
+                label.setAttribute("class", "draggable temp");
+                label.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+                label.setAttribute("onmousedown", "selectElement(evt)");
+                svg.appendChild(label);
+            }
+        });
+    }
+
+    // Create points from path
+    function pointsFromPath(selectedPaths, samples) {
+        var customPointFilterFunc = eval(document.getElementById("customPointFilter").value);
+        return selectedPaths.map((path) => {
+            var points = [];
+            var len  = path.getTotalLength();
+            var step = len/samples;
+            for (var i = 0; i <= len; i += step) {
+                var p = path.getPointAtLength(i);
+                points.push(p);
+            }
+            for (var k = 0; k < 5; k++) {
+                points = customPointFilterFunc ? customPointFilterFunc(points) : filterPointsOnAngle(points);
+            }
+            var pathPoints = [];
+            for (var i = 0; i < points.length; i++) {
+                pathPoints.push([points[i].x, points[i].y]);
+            }
+            return pathPoints;
+        });
+    }
+
+    function filterPointsOnAngle(points) {
+        var pointAlpha = parseInt(document.getElementById("pointAlpha").value);
+        var excludedPoints = [];
+        for (var i = 0; i < points.length - 2; i += 1) {
+            if (Math.abs(180 - deg(angle3(points[i], points[i + 1], points[i + 2]))) < pointAlpha) {
+                excludedPoints.push(i + 1);
+                i++;
+            }
+        }
+        return points.filter((_, i) => !excludedPoints.includes(i));
+    }
+
+    function togglePathColor() {
+        var x = document.getElementById('container').getElementsByTagName('path')[pathSelector.selectedIndex];
+        if (x.classList.contains('active-stroke')) {
+            x.classList.remove('active-stroke');
+            x.classList.add('white-stroke');
+        } else {
+            x.classList.remove('white-stroke');
+            x.classList.add('active-stroke');
+        }
+    }
+    function toggleBackgroundVisibility() {
+        var containerClassList = document.getElementById('container').classList;
+        if (containerClassList.contains('hide-drawing')) {
+            containerClassList.remove('hide-drawing');
+        } else {
+            containerClassList.add('hide-drawing');
+        }
+    }
+    function toggleLines() {
+        var pointSize = parseInt(document.getElementById("radius").value);
+        var samples = parseInt(document.getElementById("numSamples").value);
+        var svg = document.getElementById('container').getElementsByTagName('svg')[0]; // assumes only 1 svg element
+        var pointsPerPathIndex = pointsFromPath(selectedPaths, samples);
+        var lines = Array.from(Array.from(document.getElementsByTagName('line')));
+        if (lines.length) {
+            lines.forEach((line) => line.remove())
+        } else {
+            pointsPerPathIndex.forEach(points => {
+                var prevPoint = null;
+                points.forEach(point => {
+                    if (prevPoint) {
+                        var line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+                        line.setAttribute("x1", prevPoint[0]);
+                        line.setAttribute("y1", prevPoint[1]);
+                        line.setAttribute("x2", point[0]);
+                        line.setAttribute("y2", point[1]);
+                        line.setAttribute("stroke", "black");
+                        line.setAttribute("stroke-width", pointSize / 2);
+                        line.setAttribute("class", "temp");
+                        line.setAttribute("transform", "matrix(1 0 0 1 0 0)");
+                        svg.appendChild(line);
+                    }
+                    prevPoint = point;
+                });
+            });
+        }
+    }
+
+    // Allow points to be moved manually
+    // Thanks to Peter: http://www.petercollingridge.co.uk/interactive-svg-components/draggable-svg-element
+    var selectedElement = 0;
+    var currentX = 0;
+    var currentY = 0;
+    var currentMatrix = 0;
+
+    function selectElement(evt) {
+        selectedElement = evt.target;
+        currentX = evt.clientX;
+        currentY = evt.clientY;
+        currentMatrix = selectedElement.getAttributeNS(null, "transform").slice(7,-1).split(' ');
+
+        for(var i=0; i<currentMatrix.length; i++) {
+            currentMatrix[i] = parseFloat(currentMatrix[i]);
+        }
+
+        selectedElement.setAttributeNS(null, "onmousemove", "moveElement(evt)");
+        selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+        selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
+    }
+    function moveElement(evt){
+        dx = evt.clientX - currentX;
+        dy = evt.clientY - currentY;
+        currentMatrix[4] += dx;
+        currentMatrix[5] += dy;
+        newMatrix = "matrix(" + currentMatrix.join(' ') + ")";
+
+        selectedElement.setAttributeNS(null, "transform", newMatrix);
+        currentX = evt.clientX;
+        currentY = evt.clientY;
+    }
+    function deselectElement(evt){
+        if(selectedElement != 0){
+            selectedElement.removeAttributeNS(null, "onmousemove");
+            selectedElement.setAttributeNS(null, "onmouseout", "deselectElement(evt)");
+            selectedElement.setAttributeNS(null, "onmouseup", "deselectElement(evt)");
+            selectedElement = 0;
+        }
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
+    function b64DecodeUnicode(str) {
+        // Going backwards: from bytestream, to percent-encoding, to original string.
+        return decodeURIComponent(atob(str).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    }
+
+    function removeOptions(selectElement) {
+        for (var i = selectElement.length - 1; i >= 0; i--) {
+            selectElement.remove(i);
+        }
+    }
+    function setImage(imageSrc) {
+        imageSrc = imageSrc.replace('data:image/svg+xml;base64,', '');
+        imageSrc = b64DecodeUnicode(imageSrc);
+        document.getElementById("container").innerHTML = imageSrc;
+        removeOptions(pathSelector); //REMOVE THE OPTIONS FROM THE PREVIOUS SVG IMAGE
+        paths = Array.from(document.getElementsByTagName('path')); // resetting the paths and path variable
+        selectedPaths = [paths[0]]; // redefines path as the first path of the new
+        addPathOptions(); //add new path options from new SVG (ImageSrc)
+        draw();
+    }
+
+    // File upload
+    /* modified from https://codepen.io/doughensel/pen/zGMmop */
+    function runUpload( file ) {
+        // http://stackoverflow.com/questions/12570834/how-to-preview-image-get-file-size-image-height-and-width-before-upload
+        if( file.type === 'image/svg+xml'  ){
+            var reader = new FileReader(), image = new Image();
+            reader.readAsDataURL( file );
+            console.log('reading image...');
+            reader.onload = function( _file ){
+                console.log('setting image...');
+                setImage(_file.target.result);
+            } // END reader.onload()
+        } // END test if file.type === image
+    }
+    if( window.FileReader ){
+        //Bind the input[type="file"] to the function runUpload()
+        $('#fileUpload').on('change', function(){ runUpload( this.files[0] ); });
+    }else{
+        // Report error message if FileReader is unavilable
+        var p   = document.createElement( 'p' ),
+            msg = document.createTextNode( 'Sorry, your browser does not support FileReader.' );
+        p.className = 'error';
+        p.appendChild( msg );
+        $('#userActions').el.innerHTML = '';
+        $('#userActions').el.appendChild( p );
+    }
+    </script>
+
+    <!-- for collapsible panel -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+    $(".panel-collapse").on("hide.bs.collapse", function () {
+        $(".panel-collapse-clickable").find('i').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
+    });
+
+    $(".panel-collapse").on("show.bs.collapse", function () {
+        $(".panel-collapse-clickable").find('i').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
+    });
+    </script>
+</html>
